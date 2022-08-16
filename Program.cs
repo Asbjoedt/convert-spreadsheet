@@ -1,16 +1,17 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Excel = Microsoft.Office.Interop.Excel;
 
 class Program
 {
-    public string new_filepath = "";
+    public static string new_filepath = "";
 
     string Main(string[] args)
     {
         string filepath = args[0];
         string extension = Path.GetExtension(filepath);
-        string message;
+        string message = "";
 
         try
         {
@@ -64,7 +65,7 @@ class Program
 
         // Check if spreadsheet has information
         int count = wb.Worksheets.Count;
-        if (count = 0)
+        if (count == 0)
         {
             Console.WriteLine("--> Spreadsheet has no sheets. Exclude spreadsheet from archiving");
         }
@@ -81,6 +82,42 @@ class Program
             count_conn = wb.Connections.Count;
             Console.WriteLine("--> Data connections detected and removed");
             wb.Save();
+        }
+
+        // Find and replace external cell chains with cell values
+        bool hasChain = false;
+        foreach (Excel.Worksheet sheet in wb.Sheets)
+        {
+            try
+            {
+                Excel.Range range = (Excel.Range)sheet.UsedRange.SpecialCells(Excel.XlCellType.xlCellTypeFormulas);
+                foreach (Excel.Range cell in range.Cells)
+                {
+                    var value = cell.Value2;
+                    string formula = cell.Formula.ToString();
+                    string hit = formula.Substring(0, 2); // Transfer first 2 characters to string
+
+                    if (hit == "='")
+                    {
+                        hasChain = true;
+                        cell.Formula = "";
+                        cell.Value2 = value;
+                    }
+                }
+                if (hasChain == true)
+                {
+                    Console.WriteLine("--> External cell chains detected and replaced with cell values"); // Inform user
+                    wb.Save(); // Save workbook
+                }
+            }
+            catch (System.Runtime.InteropServices.COMException) // Catch if no formulas in range
+            {
+                // Do nothing
+            }
+            catch (System.ArgumentOutOfRangeException) // Catch if formula has less than 2 characters
+            {
+                // Do nothing
+            }
         }
 
         // Find and replace RTD functions with cell values
@@ -122,8 +159,14 @@ class Program
         // Close Excel
         wb.Close();
         app.Quit();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) // If app is run on Windows
+        {
+            Marshal.ReleaseComObject(wb); // Delete workbook task in task manager
+            Marshal.ReleaseComObject(app); // Delete Excel task in task manager
+        }
 
         // Return success
-        return bool success = true;
+        bool success = true;
+        return success;
     }
 }

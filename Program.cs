@@ -150,6 +150,21 @@ class Program
                 // Do nothing
             }
         }
+        
+        try
+        {
+            // Make first sheet active
+            if (app.Sheets.Count > 0)
+            {
+                Excel.Worksheet firstSheet = (Excel.Worksheet)app.ActiveWorkbook.Sheets[1];
+                firstSheet.Activate();
+                firstSheet.Select();
+            }
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            // Do nothing
+        }
 
         // Save as .xlsx Strict
         new_filepath = Path.GetDirectoryName(filepath) + "\\1.xlsx"; //Rename with 1 and give extension .xlsx

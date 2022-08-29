@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Packaging;
+using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -18,14 +19,23 @@ class Program
             switch (extension) // The switch includes all accepted file extensions
             {
                 case ".ods":
+                case ".ODS":
                 case ".ots":
+                case ".OTS":
                 case ".xls":
+                case ".XLS":
                 case ".xlsb":
+                case ".XLSB":
                 case ".xlsm":
+                case ".XLSM":
                 case ".xlsx":
+                case ".XLSX":
                 case ".xlt":
+                case ".XLT":
                 case ".xltm":
+                case ".XLTM":
                 case ".xltx":
+                case ".XLTX":
                     Console.WriteLine(filepath); // Write filepath to user
                     bool success = Convert_Requirements(filepath); // Convert data
                     if (success == true) // If convert was succesful, write sucess to user
@@ -50,7 +60,7 @@ class Program
         }
         catch (FormatException) // If spreadsheet is password protected or otherwise unreadable
         {
-            message = "File is password-protected or corrupt"; // Write user of status
+            message = "File cannot be read"; // Write user of status
             File.Delete(filepath); // Delete file
             return message;
         }
@@ -150,7 +160,7 @@ class Program
                 // Do nothing
             }
         }
-        
+
         try
         {
             // Make first sheet active
@@ -178,6 +188,20 @@ class Program
         {
             Marshal.ReleaseComObject(wb); // Delete workbook task in task manager
             Marshal.ReleaseComObject(app); // Delete Excel task in task manager
+        }
+
+        // Remove printersettings
+        using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(filepath, true))
+        {
+            var list = spreadsheet.WorkbookPart.WorksheetParts.ToList();
+            foreach (var item in list)
+            {
+                var printerList = item.SpreadsheetPrinterSettingsParts.ToList();
+                foreach (var part in printerList)
+                {
+                    item.DeletePart(part);
+                }
+            }
         }
 
         // Return success

@@ -8,7 +8,7 @@ class Program
 {
     public static string new_filepath = "";
 
-    string Main(string[] args)
+    public static void Main(string[] args)
     {
         string filepath = args[0];
         string extension = Path.GetExtension(filepath);
@@ -46,23 +46,25 @@ class Program
                     {
                         File.Delete(filepath);
                     }
-                    return message;
+                    Console.WriteLine(message);
+                    break;
 
                 default:
                     message = "File format is not an accepted file format"; // If the filepath has extension not included in switch
-                    return message;
+                    Console.WriteLine(message);
+                    break;
             }
         }
         catch (FileNotFoundException) // If filepath has not file
         {
             message = "No file in filepath"; // Write user of status
-            return message;
+            Console.WriteLine(message);
         }
         catch (FormatException) // If spreadsheet is password protected or otherwise unreadable
         {
             message = "File cannot be read"; // Write user of status
             File.Delete(filepath); // Delete file
-            return message;
+            Console.WriteLine(message);
         }
     }
 

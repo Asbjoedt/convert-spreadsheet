@@ -42,7 +42,7 @@ class Program
                     {
                         message = "File was successfully converted";
                     }
-                    if (filepath != new_filepath) // Delete original file, if it was not a .xlsx
+                    if (filepath != new_filepath) // Delete original file, if filepath was not 1.xlsx
                     {
                         File.Delete(filepath);
                     }

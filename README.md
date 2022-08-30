@@ -7,10 +7,6 @@ The program converts any spreadsheet to .xlsx Strict conformance and to meet arc
 :warning: **[Microsoft Excel](https://www.microsoft.com/en-us/microsoft-365/excel)**
 * If you want to convert legacy Excel and convert .xlsx conformance from Transitional to Strict (mandatory)
 
-:warning: **[LibreOffice](https://www.libreoffice.org/)**
-* If you want to convert OpenDocument spreadsheets
-* You need to install program in its default directory, or create environment variable "LibreOffice" with path to your installation
-
 ## How to use
 Download the executable version [here](https://github.com/Asbjoedt/convert-spreadsheets/releases). There's no need to install. In your terminal change directory to the folder where convert-spreadsheets.exe is. Then, to execute the program input:
 ```

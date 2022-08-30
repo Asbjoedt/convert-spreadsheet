@@ -13,6 +13,6 @@ Download the executable version [here](https://github.com/Asbjoedt/convert-sprea
 ```
 
 ## Packages and software
-The following packages and software are used under license in CLISC. [Read more](https://github.com/Asbjoedt/CLISC/wiki/Dependencies).
+The following packages and software are used under license.
 * [Microsoft Excel](https://www.microsoft.com/en-us/microsoft-365/excel), Copyright (c) Microsoft Corporation
 * [Open XML SDK](https://github.com/OfficeDev/Open-XML-SDK), MIT License, Copyright (c) Microsoft Corporation

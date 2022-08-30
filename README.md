@@ -1,5 +1,7 @@
 # convert-spreadsheets
 
+The program converts any spreadsheet to .xlsx Strict conformance and to meet archival data quality specifications. It can be used in simple archival workflows. It receives any filepath, if it is a spreadsheet file format, it will convert, rename to 1.xlsx and finally delete the original file.
+
 ## Dependencies
 
 :warning: **[Microsoft Excel](https://www.microsoft.com/en-us/microsoft-365/excel)**

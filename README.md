@@ -1,4 +1,4 @@
-# convert-spreadsheets
+# convert-spreadsheet
 The program converts any spreadsheet to .xlsx Strict conformance and to meet [archival data quality specifications](https://github.com/Asbjoedt/CLISC/wiki/Archival-Data-Quality). It can be used in simple archival workflows. It receives any filepath, if it is a spreadsheet file format, it will convert, rename to 1.xlsx and finally delete the original file.
 
 * For more information, see repository **[CLISC](https://github.com/Asbjoedt/CLISC)**
@@ -9,9 +9,9 @@ The program converts any spreadsheet to .xlsx Strict conformance and to meet [ar
 Excel is used in the background for conversion.
 
 ## How to use
-Download the executable version [here](https://github.com/Asbjoedt/convert-spreadsheets/releases). There's no need to install. In your terminal change directory to the folder where convert-spreadsheets.exe is. Then, to execute the program input:
+Download the executable version [here](https://github.com/Asbjoedt/convert-spreadsheet/releases). There's no need to install. In your terminal change directory to the folder where convert-spreadsheet.exe is. Then, to execute the program input:
 ```
-.\convert-spreadsheets.exe "[filepath]"
+.\convert-spreadsheet.exe "[filepath]"
 ```
 
 ## Packages and software

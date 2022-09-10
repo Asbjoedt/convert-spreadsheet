@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "convert-spreadsheets", "convert-spreadsheets.csproj", "{404D6708-18AD-424E-A473-FF53F5962F93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "convert-spreadsheet", "convert-spreadsheet.csproj", "{404D6708-18AD-424E-A473-FF53F5962F93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

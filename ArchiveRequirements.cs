@@ -17,7 +17,6 @@ namespace convert_spreadsheet
             bool success = false;
 
             Remove_DataConnections(filepath);
-            Remove_DataConnections(filepath);
             Remove_CellReferences(filepath);
             Remove_RTDFunctions(filepath);
             Remove_PrinterSettings(filepath);

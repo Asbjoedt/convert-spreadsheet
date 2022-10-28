@@ -13,9 +13,9 @@ Download the executable version [here](https://github.com/Asbjoedt/convert-sprea
 ```
 .\convert-spreadsheet.exe --inputfilepath="[filepath]"
 ```
-Optional parameters
+**Optional parameters**
 ```
---delete true //if original file should be deleted, i.e. true
+--delete //if original file should be deleted
 --rename="[filename]" //your custom filename, i.e "1".
 --outputfolder="[folder]" //your custom folder for output file, i.e. "C:\Users\%USERNAME%\Desktop"
 ```

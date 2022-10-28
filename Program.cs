@@ -1,19 +1,85 @@
 ﻿using System;
 using System.IO;
+using CommandLine;
 
 namespace convert_spreadsheet
 {
     class Program
     {
+        public class Options
+        {
+            [Option('i', "inputfilepath", Required = true, HelpText = "The input filepath")]
+            public string InputFilepath { get; set; }
+
+            [Option('d', "delete", Required = false, HelpText = "Set to delete original file.")]
+            public bool Delete { get; set; }
+
+            [Option('r', "rename", Required = false, HelpText = "Define to rename output file.")]
+            public string Rename { get; set; }
+
+            [Option('o', "outputfolder", Required = false, HelpText = "Define to save output file in custom folder. Default is same folder.")]
+            public string OutputFolder { get; set; }
+        }
+
         public static void Main(string[] args)
         {
-            string input_filepath = args[0];
-            string input_extension = Path.GetExtension(input_filepath);
-            string output_filepath = Path.GetDirectoryName(input_filepath) + "\"1.xlsx";
+            // Parse user arguments
+            var parser = new Parser(with => with.HelpWriter = null);
+            var parse_args = parser.ParseArguments<Options>(args);
+            parse_args
+            .WithParsed(RunApp);
+        }
+
+        public static void RunApp(Options arg)
+        {
+            string input_extension = Path.GetExtension(arg.InputFilepath);
+            string output_folder;
+            string output_filepath;
+
+            // Write filepath to user
+            Console.WriteLine($"Input filepath: {arg.InputFilepath}");
+
+            // Set output folder
+            if (arg.OutputFolder != null && Directory.Exists(arg.OutputFolder))
+            {
+                output_folder = arg.OutputFolder;
+            }
+            else if (arg.OutputFolder != null && !Directory.Exists(arg.OutputFolder))
+            {
+                Console.WriteLine($"Output folder \"{arg.OutputFolder}\" does not exist");
+                throw new DirectoryNotFoundException("Output folder does not exist");
+            }
+            else
+            {
+                output_folder = Path.GetDirectoryName(arg.InputFilepath);
+            }
+
+            // Set output filename
+            if (arg.Rename != null)
+            {
+                output_filepath = output_folder + "\\" + arg.Rename + ".xlsx";
+            }
+            else
+            {
+                output_filepath = output_folder + "\\" + Path.GetFileNameWithoutExtension(arg.InputFilepath) + ".xlsx";
+            }
+
+            Convert conversion = new Convert();
+            ArchiveRequirements ArcReq = new ArchiveRequirements();
+            bool convert_success = false;
+            bool archive_success = false;
+
+            // Quit program if no file exists
+            if (!File.Exists(arg.InputFilepath))
+            {
+                Console.WriteLine("No file in input filepath");
+                Environment.Exit(0);
+            }
 
             try
             {
-                switch (input_extension) // The switch includes all accepted file extensions
+                // The switch includes all accepted file extensions for conversion
+                switch (input_extension)
                 {
                     case ".ods":
                     case ".ODS":
@@ -21,38 +87,30 @@ namespace convert_spreadsheet
                     case ".OTS":
                     case ".xls":
                     case ".XLS":
+                    case ".xlt":
+                    case ".XLT":
                     case ".xlsb":
                     case ".XLSB":
+                        // Convert spreadsheet to .xlsx
+                        convert_success = conversion.Convert_All(arg.InputFilepath, output_filepath);
+
+                        // Comply with archiving requirements
+                        archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
+                        break;
+
                     case ".xlsm":
                     case ".XLSM":
                     case ".xlsx":
                     case ".XLSX":
-                    case ".xlt":
-                    case ".XLT":
                     case ".xltm":
                     case ".XLTM":
                     case ".xltx":
                     case ".XLTX":
-                        // Write filepath to user
-                        Console.WriteLine(input_filepath);
-
                         // Convert spreadsheet to .xlsx
-                        Convert conversion = new Convert();
-                        bool convert_success = conversion.Convert_All(input_filepath, output_filepath);
-
-                        // Write output filepath to user
-                        Console.WriteLine("New filepath is: " + output_filepath);
+                        convert_success = conversion.Convert_OOXML(arg.InputFilepath, output_filepath);
 
                         // Comply with archiving requirements
-                        ArchiveRequirements ArcReq = new ArchiveRequirements();
-                        bool archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
-
-                        // Delete original file, if filepath was not 1.xlsx
-                        if (input_filepath != output_filepath) 
-                        {
-                            File.Delete(input_filepath);
-                            Console.WriteLine("Input file was deleted");
-                        }
+                        archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
                         break;
 
                     default:
@@ -61,16 +119,31 @@ namespace convert_spreadsheet
                         break;
                 }
             }
-            // If filepath has not file
-            catch (FileNotFoundException) 
-            {
-                Console.WriteLine("No file in filepath");
-            }
+
             // If spreadsheet is password protected or otherwise unreadable
-            catch (FormatException) 
+            catch (FormatException)
             {
-                File.Delete(input_filepath); // Delete file
-                Console.WriteLine("File cannot be read");
+                Console.WriteLine("Input file cannot be read");
+            }
+
+            // Post conversion operations
+            finally
+            {
+                if (convert_success == true && archive_success == true)
+                {
+                    if (arg.Delete == true)
+                    {
+                        // Delete original file, if filepath was not 1.xlsx
+                        if (arg.InputFilepath != output_filepath)
+                        {
+                            File.Delete(arg.InputFilepath);
+                            Console.WriteLine("Input file was deleted");
+                        }
+                    }
+
+                    // Write output filepath to user
+                    Console.WriteLine("Output filepath is: " + output_filepath);
+                }
             }
         }
     }

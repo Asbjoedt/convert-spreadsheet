@@ -11,7 +11,13 @@ Excel is used in the background for conversion.
 ## How to use
 Download the executable version [here](https://github.com/Asbjoedt/convert-spreadsheet/releases). There's no need to install. In your terminal change directory to the folder where convert-spreadsheet.exe is. Then, to execute the program input:
 ```
-.\convert-spreadsheet.exe "[filepath]"
+.\convert-spreadsheet.exe --inputfilepath="[filepath]"
+```
+Optional parameters
+```
+--delete true //if original file should be deleted, i.e. true
+--rename="[filename]" //your custom filename, i.e "1".
+--outputfolder="[folder]" //your custom folder for output file, i.e. "C:\Users\%USERNAME%\Desktop"
 ```
 
 ## Packages and software

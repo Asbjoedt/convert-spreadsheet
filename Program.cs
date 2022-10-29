@@ -25,8 +25,8 @@ namespace convert_spreadsheet
         {
             // Parse user arguments
             var parser = new Parser(with => with.HelpWriter = null);
-            var result = parser.ParseArguments<Options>(args).MapResult((opts) => RunApp(opts), errs => ShowHelp(errs));
-            return result;
+            int exitcode = parser.ParseArguments<Options>(args).MapResult((opts) => RunApp(opts), errs => ShowHelp(errs));
+            return exitcode;
         }
 
         static int RunApp(Options arg)
@@ -68,7 +68,7 @@ namespace convert_spreadsheet
             bool convert_success = false;
             bool archive_success = false;
 
-            // Quit program if no file exists
+            // End program if no file exists
             if (!File.Exists(arg.InputFilepath))
             {
                 Console.WriteLine("No file in input filepath");
@@ -115,7 +115,7 @@ namespace convert_spreadsheet
                     default:
                         // If the filepath has extension not included in switch
                         Console.WriteLine("File format is not an accepted file format");
-                        break;
+                        return fail;
                 }
             }
 

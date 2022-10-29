@@ -13,12 +13,19 @@ Download the executable version [here](https://github.com/Asbjoedt/convert-sprea
 ```
 .\convert-spreadsheet.exe --inputfilepath="[filepath]"
 ```
+
 **Optional parameters**
 ```
 --delete //if original file should be deleted
 --rename="[filename]" //your custom filename, i.e "1".
 --outputfolder="[folder]" //your custom folder for output file, i.e. "C:\Users\%USERNAME%\Desktop"
 ```
+
+**Return codes**
+
+The program writes information to the console and it also returns an exit code to integrate in workflows.
+* 0 = File failed conversion
+* 1 = File completed conversion
 
 ## Packages and software
 The following packages and software are used under license.

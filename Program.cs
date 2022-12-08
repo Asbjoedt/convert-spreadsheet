@@ -32,7 +32,7 @@ namespace convert_spreadsheet
 
         public static void RunApp(Options arg)
         {
-            string input_extension = Path.GetExtension(arg.InputFilepath).ToLower();
+            string input_extension = Path.GetExtension(arg.InputFilepath);
             string output_folder;
             string output_filepath;
 
@@ -82,10 +82,15 @@ namespace convert_spreadsheet
                 switch (input_extension)
                 {
                     case ".ods":
+                    case ".ODS":
                     case ".ots":
+                    case ".OTS":
                     case ".xls":
+                    case ".XLS":
                     case ".xlt":
+                    case ".XLT":
                     case ".xlsb":
+                    case ".XLSB":
                         // Convert spreadsheet to .xlsx
                         convert_success = conversion.Convert_All(arg.InputFilepath, output_filepath);
 
@@ -94,9 +99,13 @@ namespace convert_spreadsheet
                         break;
 
                     case ".xlsm":
+                    case ".XLSM":
                     case ".xlsx":
+                    case ".XLSX":
                     case ".xltm":
+                    case ".XLTM":
                     case ".xltx":
+                    case ".XLTX":
                         // Convert spreadsheet to .xlsx
                         convert_success = conversion.Convert_OOXML(arg.InputFilepath, output_filepath);
 

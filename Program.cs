@@ -21,21 +21,20 @@ namespace convert_spreadsheet
             public string OutputFolder { get; set; }
         }
 
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             // Parse user arguments
             var parser = new Parser(with => with.HelpWriter = null);
-            var parse_args = parser.ParseArguments<Options>(args);
-            parse_args
-            .WithParsed(RunApp);
+            int exitcode = parser.ParseArguments<Options>(args).MapResult((opts) => RunApp(opts), errs => ShowHelp(errs));
+            return exitcode;
         }
 
-        public static void RunApp(Options arg)
+        static int RunApp(Options arg)
         {
             string input_extension = Path.GetExtension(arg.InputFilepath);
-            string output_folder;
-            string output_filepath;
-
+            string output_folder, output_filepath;
+            int fail = 0, success = 1;
+            
             // Write filepath to user
             Console.WriteLine($"Input filepath: {arg.InputFilepath}");
 
@@ -47,7 +46,7 @@ namespace convert_spreadsheet
             else if (arg.OutputFolder != null && !Directory.Exists(arg.OutputFolder))
             {
                 Console.WriteLine($"Output folder \"{arg.OutputFolder}\" does not exist");
-                throw new DirectoryNotFoundException("Output folder does not exist");
+                return fail;
             }
             else
             {
@@ -69,11 +68,11 @@ namespace convert_spreadsheet
             bool convert_success = false;
             bool archive_success = false;
 
-            // Quit program if no file exists
+            // End program if no file exists
             if (!File.Exists(arg.InputFilepath))
             {
                 Console.WriteLine("No file in input filepath");
-                Environment.Exit(0);
+                return fail;
             }
 
             try
@@ -116,7 +115,7 @@ namespace convert_spreadsheet
                     default:
                         // If the filepath has extension not included in switch
                         Console.WriteLine("File format is not an accepted file format");
-                        break;
+                        return fail;
                 }
             }
 
@@ -124,6 +123,7 @@ namespace convert_spreadsheet
             catch (FormatException)
             {
                 Console.WriteLine("Input file cannot be read");
+                return fail;
             }
 
             // Post conversion operations
@@ -145,6 +145,17 @@ namespace convert_spreadsheet
                     Console.WriteLine("Output filepath is: " + output_filepath);
                 }
             }
+
+            // Return success to user
+            return success;
+        }
+
+        // Show help to user, if parsing arguments fail
+        static int ShowHelp(IEnumerable<Error> errs)
+        {
+            int fail = 0;
+            Console.WriteLine("Input arguments have errors");
+            return fail;
         }
     }
 }

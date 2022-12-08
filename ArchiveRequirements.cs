@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO.Packaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Office2013.ExcelAc;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace convert_spreadsheet
 {
@@ -16,6 +18,7 @@ namespace convert_spreadsheet
         {
             bool success = false;
 
+            Change_Conformance_ExcelInterop(filepath);
             Remove_DataConnections(filepath);
             Remove_CellReferences(filepath);
             Remove_RTDFunctions(filepath);
@@ -28,6 +31,27 @@ namespace convert_spreadsheet
             Console.WriteLine("File complies with archival requirements");
             success = true;
             return success;
+        }
+
+        // Change conformance to Strict
+        public void Change_Conformance_ExcelInterop(string filepath)
+        {
+            // Open Excel
+            Excel.Application app = new Excel.Application(); // Create Excel object instance
+            app.DisplayAlerts = false; // Don't display any Excel prompts
+            Excel.Workbook wb = app.Workbooks.Open(filepath, ReadOnly: false, Password: "'", WriteResPassword: "'", IgnoreReadOnlyRecommended: true, Notify: false); // Create workbook instance
+
+            // Convert to Strict and close Excel
+            wb.SaveAs(filepath, 61);
+            wb.Close();
+            app.Quit();
+
+            // If CLISC is run on Windows close Excel in task manager
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Marshal.ReleaseComObject(wb); // Delete workbook task
+                Marshal.ReleaseComObject(app); // Delete Excel task
+            }
         }
 
         // Remove data connections

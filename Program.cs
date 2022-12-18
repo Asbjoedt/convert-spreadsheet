@@ -21,6 +21,7 @@ namespace Convert.Spreadsheet
             public bool Policy { get; set; }
 
             [Option('l', "libreoffice", Required = false, HelpText = "Set to use LibreOffice instead of Excel for conversion.")]
+
             public bool LibreOffice { get; set; }
 
             [Option('f', "outputfileformat", Required = true, HelpText = "Define output file format")]

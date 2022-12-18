@@ -23,8 +23,8 @@ namespace Convert.Spreadsheet
             [Option('l', "libreoffice", Required = false, HelpText = "Set to use LibreOffice instead of Excel for conversion.")]
             public bool LibreOffice { get; set; }
 
-            [Option('f', "fileformat", Required = true, HelpText = "Define output file format")]
-            public string FileFormat { get; set; }
+            [Option('f', "outputfileformat", Required = true, HelpText = "Define output file format")]
+            public string OutputFileFormat { get; set; }
 
             [Option('o', "outputfolder", Required = false, HelpText = "Define to save output file in custom folder. Default is same folder.")]
             public string OutputFolder { get; set; }
@@ -41,12 +41,9 @@ namespace Convert.Spreadsheet
         static int RunApp(Options arg)
         {
             string input_extension = Path.GetExtension(arg.InputFilepath).ToLower();
-            string output_extension = "." + arg.FileFormat.ToLower().R;
+            string output_extension = "." + arg.OutputFileFormat.ToLower().Split("-").First();
             string output_folder, output_filepath;
             int fail = 0, success = 1;
-            
-            // Write filepath to user
-            Console.WriteLine($"Input filepath: {arg.InputFilepath}");
 
             // Set output folder
             if (arg.OutputFolder != null && Directory.Exists(arg.OutputFolder))
@@ -88,13 +85,13 @@ namespace Convert.Spreadsheet
                 Console.WriteLine("Input file format is not an accepted file format");
                 return fail;
             }
-            int output_check = check.CheckOutputFileFormat(arg.FileFormat);
+            int output_check = check.CheckOutputFileFormat(output_extension);
             if (output_check == 0)
             {
                 Console.WriteLine("Output file format is not an accepted file format");
                 return fail;
             }
-
+            
             // Define data types
             bool archive_success = false;
             bool convert_success = false;
@@ -108,12 +105,12 @@ namespace Convert.Spreadsheet
                 Convert conversion = new Convert();
                 if (arg.LibreOffice != null) // Use LibreOffice
                 {
-                    convert_success = conversion.Convert_AnyFileFormat_UsingLibreOffice(arg.InputFilepath, output_folder, arg.FileFormat);
+                    convert_success = conversion.Convert_AnyFileFormat_UsingLibreOffice(arg.InputFilepath, output_folder, output_extension);
                 }
                 else if (input_extension != ".numbers" || input_extension != ".fods") // Use Excel
                 {
                     // Transform file format to int
-                    int xlFileFormat = check.ConvertFileFormatToInt(arg.FileFormat);
+                    int xlFileFormat = check.ConvertFileFormatToInt(arg.OutputFileFormat);
                     convert_success = conversion.Convert_AnyFileFormat_UsingExcel(arg.InputFilepath, output_filepath, xlFileFormat);
                 }
                 else if (input_extension == ".numbers" || input_extension == ".fods") // Use Excel, but file formats are not supported
@@ -122,8 +119,18 @@ namespace Convert.Spreadsheet
                 }
 
                 // Convert to comply with archival requirements
-                ArchiveRequirements ArcReq = new ArchiveRequirements();
-                archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
+                if (arg.Policy == true)
+                {
+                    if (output_extension == ".xlsx")
+                    {
+                        ArchiveRequirements ArcReq = new ArchiveRequirements();
+                        archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
+                    }
+                    else
+                    {
+                        Console.WriteLine("File format policy compliance is only supported for .xlsx output files");
+                    }
+                }
             }
 
             // If spreadsheet is password protected or otherwise unreadable
@@ -151,15 +158,13 @@ namespace Convert.Spreadsheet
                     // If rename
                     if (arg.Rename != null)
                     {
-                       
+                        string temp_filepath = output_folder + Path.GetFileNameWithoutExtension(arg.InputFilepath) + output_extension;
+                        File.Move(temp_filepath, output_filepath);
                     }
-
-                    // Write output filepath to user
-                    Console.WriteLine("Output filepath is: " + output_filepath);
                 }
             }
-
             // Return success to user
+            Console.WriteLine("Program finished");
             return success;
         }
 

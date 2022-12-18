@@ -116,7 +116,7 @@ namespace Convert.Spreadsheet
         }
 
         // Convert using LibreOffice
-        public static bool Convert_AnyFileFormat_UsingLibreOffice(string input_filepath, string output_folder, string output_fileformat)
+        public bool Convert_AnyFileFormat_UsingLibreOffice(string input_filepath, string output_folder, string output_fileformat)
         {
             bool success = false;
             Process app = new Process();

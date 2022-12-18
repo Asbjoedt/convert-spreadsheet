@@ -24,7 +24,7 @@ namespace Convert.Spreadsheet
         {
             int fail = 0, success = 1;
 
-            string[] output_fileformats = { "fods", "ods", "ots", "xls", "xla", "xlt", "xlam", "xlsb", "xlsm", "xlsx", "xlsx-strict", "xltm", "xltx", ".csv", "html", "mht", "unicodetext", "printer" };
+            string[] output_fileformats = { ".fods", ".ods", ".ots", ".xls", ".xla", ".xlt", ".xlam", ".xlsb", ".xlsm", ".xlsx", ".xltm", ".xltx", ".csv", ".html", ".mht", ".txt" };
             if (!output_fileformats.Contains(output_fileformat))
             {
                 return fail;
@@ -66,10 +66,8 @@ namespace Convert.Spreadsheet
                     return 44;
                 case "mht":
                     return 45;
-                case "unicodetext":
+                case "txt":
                     return 42;
-                case "printer":
-                    return 36;
             }
             return output;
         }

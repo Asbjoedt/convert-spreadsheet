@@ -11,14 +11,23 @@ Excel is used in the background for conversion.
 ## How to use
 Download the executable version [here](https://github.com/Asbjoedt/convert-spreadsheet/releases). There's no need to install. In your terminal change directory to the folder where convert-spreadsheet.exe is. Then, to execute the program input:
 ```
-.\convert-spreadsheet.exe --inputfilepath="[filepath]"
+.\convert-spreadsheet.exe --inputfilepath="[filepath]" --outputfileformat="[extension]"
 ```
 
-**Optional parameters**
+**Parameters**
+
+Required
 ```
---delete //if original file should be deleted
---rename="[filename]" //your custom filename, i.e "1".
---outputfolder="[folder]" //your custom folder for output file, i.e. "C:\Users\%USERNAME%\Desktop"
+--inputfilepath="[filepath]" // path to the file you want to convert
+--outputfileformat="[extension]" // your output file format
+```
+Optional
+```
+--outputfolder="[folder]" // your custom folder for output file, i.e. "C:\Users\%USERNAME%\Desktop"
+--libreoffice // if you want to use LibreOffice as conversion tool instead of Excel
+--policy // if you want to convert data to comply with archiving requirements
+--delete // if original file should be deleted
+--rename="[filename]" // your custom filename, i.e "1".
 ```
 
 **Exit codes**

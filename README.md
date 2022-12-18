@@ -6,7 +6,11 @@ The program converts any spreadsheet to .xlsx Strict conformance and to meet [ar
 ## Dependencies
 :warning: **[Microsoft Excel](https://www.microsoft.com/en-us/microsoft-365/excel)**
 
-Excel is used in the background for conversion.
+Excel can be used as conversion tool.
+
+:warning: **[LibreOffice](https://libreoffice.org)**
+
+LibreOffice can be used as conversion tool.
 
 ## How to use
 Download the executable version [here](https://github.com/Asbjoedt/convert-spreadsheet/releases). There's no need to install. In your terminal change directory to the folder where convert-spreadsheet.exe is. Then, to execute the program input:
@@ -40,5 +44,6 @@ The program writes information to the console and it also returns an exit code t
 
 ## Packages and software
 The following packages and software are used under license.
+* [LibreOffice](https://www.libreoffice.org/), Mozilla Public License v2.0
 * [Microsoft Excel](https://www.microsoft.com/en-us/microsoft-365/excel), Copyright (c) Microsoft Corporation
 * [Open XML SDK](https://github.com/OfficeDev/Open-XML-SDK), MIT License, Copyright (c) Microsoft Corporation

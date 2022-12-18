@@ -41,6 +41,7 @@ namespace Convert.Spreadsheet
         static int RunApp(Options arg)
         {
             string input_extension = Path.GetExtension(arg.InputFilepath).ToLower();
+            string output_extension = "." + arg.FileFormat.ToLower().R;
             string output_folder, output_filepath;
             int fail = 0, success = 1;
             
@@ -62,14 +63,14 @@ namespace Convert.Spreadsheet
                 output_folder = Path.GetDirectoryName(arg.InputFilepath);
             }
 
-            // Set output filename
+            // Set output filename         
             if (arg.Rename != null)
             {
-                output_filepath = output_folder + "\\" + arg.Rename + ".xlsx";
+                output_filepath = output_folder + "\\" + arg.Rename + output_extension;
             }
             else
             {
-                output_filepath = output_folder + "\\" + Path.GetFileNameWithoutExtension(arg.InputFilepath) + ".xlsx";
+                output_filepath = output_folder + "\\" + Path.GetFileNameWithoutExtension(arg.InputFilepath) + output_extension;
             }
 
             // End program if no file exists

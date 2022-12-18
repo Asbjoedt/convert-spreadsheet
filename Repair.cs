@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
-namespace convert_spreadsheet
+namespace Convert.Spreadsheet
 {
     public class Repair
     {

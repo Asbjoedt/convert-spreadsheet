@@ -10,7 +10,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace convert_spreadsheet
+namespace Convert.Spreadsheet
 {
     public class ArchiveRequirements
     {

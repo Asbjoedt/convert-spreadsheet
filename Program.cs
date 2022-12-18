@@ -2,7 +2,7 @@
 using System.IO;
 using CommandLine;
 
-namespace convert_spreadsheet
+namespace Convert.Spreadsheet
 {
     class Program
     {
@@ -16,6 +16,15 @@ namespace convert_spreadsheet
 
             [Option('r', "rename", Required = false, HelpText = "Define to rename output file.")]
             public string Rename { get; set; }
+
+            [Option('p', "policy", Required = false, HelpText = "Set to convert file to comply with archival requirements.")]
+            public bool Policy { get; set; }
+
+            [Option('l', "libreoffice", Required = false, HelpText = "Set to use LibreOffice instead of Excel for conversion.")]
+            public bool LibreOffice { get; set; }
+
+            [Option('f', "fileformat", Required = true, HelpText = "Define output file format")]
+            public string FileFormat { get; set; }
 
             [Option('o', "outputfolder", Required = false, HelpText = "Define to save output file in custom folder. Default is same folder.")]
             public string OutputFolder { get; set; }
@@ -63,11 +72,6 @@ namespace convert_spreadsheet
                 output_filepath = output_folder + "\\" + Path.GetFileNameWithoutExtension(arg.InputFilepath) + ".xlsx";
             }
 
-            Convert conversion = new Convert();
-            ArchiveRequirements ArcReq = new ArchiveRequirements();
-            bool convert_success = false;
-            bool archive_success = false;
-
             // End program if no file exists
             if (!File.Exists(arg.InputFilepath))
             {
@@ -75,39 +79,50 @@ namespace convert_spreadsheet
                 return fail;
             }
 
+            // End program if input or output file formats are not accepted
+            FileFormats check = new FileFormats();
+            int input_check = check.CheckInputFileFormat(input_extension);
+            if (input_check == 0)
+            {
+                Console.WriteLine("Input file format is not an accepted file format");
+                return fail;
+            }
+            int output_check = check.CheckOutputFileFormat(arg.FileFormat);
+            if (output_check == 0)
+            {
+                Console.WriteLine("Output file format is not an accepted file format");
+                return fail;
+            }
+
+            // Define data types
+            bool archive_success = false;
+            bool convert_success = false;
+
             try
             {
-                // The switch includes all accepted file extensions for conversion
-                switch (input_extension)
+                // Remove file attributes on file
+                File.SetAttributes(arg.InputFilepath, FileAttributes.Normal);
+
+                // Convert file
+                Convert conversion = new Convert();
+                if (arg.LibreOffice != null) // Use LibreOffice
                 {
-                    case ".ods":
-                    case ".ots":
-                    case ".xls":
-                    case ".xlt":
-                    case ".xlsb":
-                        // Convert spreadsheet to .xlsx
-                        convert_success = conversion.Convert_All(arg.InputFilepath, output_filepath);
-
-                        // Comply with archiving requirements
-                        archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
-                        break;
-
-                    case ".xlsm":
-                    case ".xlsx":
-                    case ".xltm":
-                    case ".xltx":
-                        // Convert spreadsheet to .xlsx
-                        convert_success = conversion.Convert_OOXML(arg.InputFilepath, output_filepath);
-
-                        // Comply with archiving requirements
-                        archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
-                        break;
-
-                    default:
-                        // If the filepath has extension not included in switch
-                        Console.WriteLine("File format is not an accepted file format");
-                        return fail;
+                    convert_success = conversion.Convert_AnyFileFormat_UsingLibreOffice(arg.InputFilepath, output_folder, arg.FileFormat);
                 }
+                else if (input_extension != ".numbers" || input_extension != ".fods") // Use Excel
+                {
+                    // Transform file format to int
+                    int xlFileFormat = check.ConvertFileFormatToInt(arg.FileFormat);
+                    convert_success = conversion.Convert_AnyFileFormat_UsingExcel(arg.InputFilepath, output_filepath, xlFileFormat);
+                }
+                else if (input_extension == ".numbers" || input_extension == ".fods") // Use Excel, but file formats are not supported
+                {
+                    Console.WriteLine("Excel cannot convert to output file format");
+                }
+
+                // Convert to comply with archival requirements
+                ArchiveRequirements ArcReq = new ArchiveRequirements();
+                archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
             }
 
             // If spreadsheet is password protected or otherwise unreadable
@@ -122,6 +137,7 @@ namespace convert_spreadsheet
             {
                 if (convert_success == true && archive_success == true)
                 {
+                    // If delete
                     if (arg.Delete == true)
                     {
                         // Delete original file, if filepath was not 1.xlsx
@@ -130,6 +146,11 @@ namespace convert_spreadsheet
                             File.Delete(arg.InputFilepath);
                             Console.WriteLine("Input file was deleted");
                         }
+                    }
+                    // If rename
+                    if (arg.Rename != null)
+                    {
+                       
                     }
 
                     // Write output filepath to user

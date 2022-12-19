@@ -1,5 +1,5 @@
 # convert-spreadsheet
-The program converts any spreadsheet to .xlsx Strict conformance and to meet [archival data quality specifications](https://github.com/Asbjoedt/CLISC/wiki/Archival-Data-Quality). It can be used in simple archival workflows. It receives any filepath, if it is a spreadsheet file format, it will convert, rename to 1.xlsx and finally delete the original file.
+The program converts any input spreadsheet file format to any output spreadsheet file format using Excel or LibreOffice in the background. If output file format is xlsx, the program can convert to meet [archival data quality specifications](https://github.com/Asbjoedt/CLISC/wiki/Archival-Data-Quality). The program is intended for use in archival workflows.
 
 * For more information, see repository **[CLISC](https://github.com/Asbjoedt/CLISC)**
 

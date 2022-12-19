@@ -23,7 +23,7 @@ Download the executable version [here](https://github.com/Asbjoedt/convert-sprea
 Required
 ```
 --inputfilepath="[filepath]" // path to the file you want to convert
---outputfileformat="[extension]" // your output file format
+--outputfileformat="[extension]" // your output file format e.g. "ods", "xlsx", "csv"
 ```
 Optional
 ```
@@ -31,7 +31,7 @@ Optional
 --libreoffice // if you want to use LibreOffice as conversion tool instead of Excel
 --policy // if you want to convert data to comply with archiving requirements
 --delete // if original file should be deleted
---rename="[filename]" // your custom filename, i.e "1".
+--rename="[filename]" // your custom filename e.g. "1".
 ```
 
 **Exit codes**

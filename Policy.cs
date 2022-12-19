@@ -342,7 +342,7 @@ namespace Convert.Spreadsheet
                 app.StartInfo.FileName = "C:\\Program Files\\ODS-ArchivalRequirements\\ODS-ArchivalRequirements.jar";
             }
 
-            app.StartInfo.Arguments = $"--inputfilepath={filepath} --change";
+            app.StartInfo.Arguments = $"--inputfilepath \"{filepath}\" --change";
             app.Start();
             app.WaitForExit();
             app.Close();

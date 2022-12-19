@@ -23,7 +23,7 @@ Download the executable version [here](https://github.com/Asbjoedt/convert-sprea
 Required
 ```
 --inputfilepath="[filepath]" // path to the file you want to convert
---outputfileformat="[extension]" // your output file format e.g. "ods", "xlsx", "csv"
+--outputfileformat="[extension]" // your output file format e.g. "ods", "xlsx", "xlsx-strict", "csv"
 ```
 Optional
 ```

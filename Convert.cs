@@ -13,7 +13,7 @@ namespace Convert.Spreadsheet
 {
     public class Convert
     {
-        public bool Convert_OOXML(string input_filepath, string output_filepath)
+        public bool OOXML(string input_filepath, string output_filepath)
         {
             bool success = false;
 
@@ -51,7 +51,7 @@ namespace Convert.Spreadsheet
             return success;
         }
 
-        public bool Convert_ToXLSXStrict_UsingExcel(string input_filepath, string output_filepath)
+        public bool ToXLSXStrict_Excel(string input_filepath, string output_filepath)
         {
             bool success = false;
 
@@ -83,7 +83,7 @@ namespace Convert.Spreadsheet
             return success;
         }
 
-        public bool Convert_AnyFileFormat_UsingExcel(string input_filepath, string output_filepath, int xlfileformat)
+        public bool AnyFileFormat_Excel(string input_filepath, string output_filepath, int xlfileformat)
         {
             bool success = false;
 
@@ -107,16 +107,13 @@ namespace Convert.Spreadsheet
             // Inform user of success
             Console.WriteLine("File was successfully converted");
 
-            Repair rep = new Repair();
-            rep.Repair_OOXML(output_filepath);
-
             // Return success
             success = true;
             return success;
         }
 
         // Convert using LibreOffice
-        public bool Convert_AnyFileFormat_UsingLibreOffice(string input_filepath, string output_folder, string output_fileformat)
+        public bool AnyFileFormat_LibreOffice(string input_filepath, string output_folder, string output_fileformat)
         {
             bool success = false;
             Process app = new Process();

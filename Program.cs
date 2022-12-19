@@ -43,6 +43,7 @@ namespace Convert.Spreadsheet
         {
             string input_extension = Path.GetExtension(arg.InputFilepath).ToLower();
             string output_extension = "." + arg.OutputFileFormat.ToLower().Split("-").First();
+            string output_extension_LibreOffice = arg.OutputFileFormat.ToLower().Split("-").First();
             string output_folder, output_filepath;
             int fail = 0, success = 1;
 
@@ -92,7 +93,7 @@ namespace Convert.Spreadsheet
                 Console.WriteLine("Output file format is not an accepted file format");
                 return fail;
             }
-            
+
             // Define data types
             bool archive_success = false;
             bool convert_success = false;
@@ -104,17 +105,26 @@ namespace Convert.Spreadsheet
 
                 // Convert file
                 Convert conversion = new Convert();
-                if (arg.LibreOffice != null) // Use LibreOffice
+                // Use LibreOffice
+                if (arg.LibreOffice == true) 
                 {
-                    convert_success = conversion.Convert_AnyFileFormat_UsingLibreOffice(arg.InputFilepath, output_folder, output_extension);
+                    convert_success = conversion.AnyFileFormat_LibreOffice(arg.InputFilepath, output_folder, output_extension_LibreOffice);
                 }
-                else if (input_extension != ".numbers" || input_extension != ".fods") // Use Excel
+                // Use LibreOffice, but file formats are not supported
+                if (arg.LibreOffice == true && arg.OutputFileFormat == "xlsx-strict")
                 {
-                    // Transform file format to int
+                    Console.WriteLine("LibreOffice cannot convert to output file format");
+                }
+                // Use Excel
+                else if (input_extension != ".numbers" || input_extension != ".fods") 
+                {
+                    // First transform file format to int
                     int xlFileFormat = check.ConvertFileFormatToInt(arg.OutputFileFormat);
-                    convert_success = conversion.Convert_AnyFileFormat_UsingExcel(arg.InputFilepath, output_filepath, xlFileFormat);
+                    // Then use int in conversion
+                    convert_success = conversion.AnyFileFormat_Excel(arg.InputFilepath, output_filepath, xlFileFormat);
                 }
-                else if (input_extension == ".numbers" || input_extension == ".fods") // Use Excel, but file formats are not supported
+                // Use Excel, but file formats are not supported
+                else if (input_extension == ".numbers" || input_extension == ".fods") 
                 {
                     Console.WriteLine("Excel cannot convert to output file format");
                 }
@@ -124,12 +134,17 @@ namespace Convert.Spreadsheet
                 {
                     if (output_extension == ".xlsx")
                     {
+                        // First repair file
+                        Repair rep = new Repair();
+                        rep.Repair_OOXML(output_filepath);
+
+                        // Then comply with archival requirements
                         ArchiveRequirements ArcReq = new ArchiveRequirements();
                         archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
                     }
                     else
                     {
-                        Console.WriteLine("File format policy compliance is only supported for .xlsx output files");
+                        Console.WriteLine("File format policy compliance is only supported for XLSX output file format");
                     }
                 }
             }
@@ -144,8 +159,15 @@ namespace Convert.Spreadsheet
             // Post conversion operations
             finally
             {
-                if (convert_success == true && archive_success == true)
+                if (convert_success == true)
                 {
+                    // If rename
+                    if (arg.Rename != null && arg.LibreOffice == true)
+                    {
+                        string temp_filepath = output_folder + "\\" + Path.GetFileNameWithoutExtension(arg.InputFilepath) + output_extension;
+                        File.Move(temp_filepath, output_filepath);
+                    }
+
                     // If delete
                     if (arg.Delete == true)
                     {
@@ -155,12 +177,6 @@ namespace Convert.Spreadsheet
                             File.Delete(arg.InputFilepath);
                             Console.WriteLine("Input file was deleted");
                         }
-                    }
-                    // If rename
-                    if (arg.Rename != null)
-                    {
-                        string temp_filepath = output_folder + Path.GetFileNameWithoutExtension(arg.InputFilepath) + output_extension;
-                        File.Move(temp_filepath, output_filepath);
                     }
                 }
             }

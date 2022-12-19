@@ -132,6 +132,7 @@ namespace Convert.Spreadsheet
                 // Convert to comply with archival requirements
                 if (arg.Policy == true)
                 {
+                    Policy ArcReq = new Policy();
                     if (output_extension == ".xlsx")
                     {
                         // First repair file
@@ -139,12 +140,16 @@ namespace Convert.Spreadsheet
                         rep.Repair_OOXML(output_filepath);
 
                         // Then comply with archival requirements
-                        ArchiveRequirements ArcReq = new ArchiveRequirements();
-                        archive_success = ArcReq.ArchiveRequirements_OOXML(output_filepath);
+                        archive_success = ArcReq.All_OOXML(output_filepath);
+                    }
+                    else if (output_extension == ".ods")
+                    {
+                        // Comply with archival requirements
+                        archive_success = ArcReq.All_ODS(output_filepath);
                     }
                     else
                     {
-                        Console.WriteLine("File format policy compliance is only supported for XLSX output file format");
+                        Console.WriteLine("File format policy compliance is not supported for output file format");
                     }
                 }
             }

@@ -8,6 +8,11 @@
     <Nullable>enable</Nullable>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>G:\Mit drev\Diverse\Keys\Signing keys for my programs\convert-spreadsheet.snk</AssemblyOriginatorKeyFile>
+    <Authors>Asbjørn Skødt</Authors>
+    <Title>convert-spreadsheet</Title>
+    <Copyright>Asbjørn Skødt</Copyright>
+    <RepositoryUrl>https://github.com/Asbjoedt/convert-spreadsheet</RepositoryUrl>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

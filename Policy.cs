@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Packaging;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,9 +13,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Convert.Spreadsheet
 {
-    public class ArchiveRequirements
+    public class Policy
     {
-        public bool ArchiveRequirements_OOXML(string filepath)
+        public bool All_OOXML(string filepath)
         {
             bool success = false;
 
@@ -316,6 +317,38 @@ namespace Convert.Spreadsheet
                     Console.WriteLine("Absolute path to local directory removed");
                 }
             }
+        }
+
+        // If file is ODS, use external app
+        public bool All_ODS(string filepath)
+        {
+            bool success = false;
+            Process app = new Process();
+            app.StartInfo.UseShellExecute = false;
+            app.StartInfo.FileName = "javaw";
+
+            // If app is run on Windows
+            string? dir = null;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                dir = Environment.GetEnvironmentVariable("ODS-ArchivalRequirements");
+            }
+            if (dir != null)
+            {
+                app.StartInfo.FileName = dir;
+            }
+            else
+            {
+                app.StartInfo.FileName = "C:\\Program Files\\ODS-ArchivalRequirements\\ODS-ArchivalRequirements.jar";
+            }
+
+            app.StartInfo.Arguments = $"--inputfilepath={filepath} --change";
+            app.Start();
+            app.WaitForExit();
+            app.Close();
+
+            success = true;
+            return success;
         }
     }
 }

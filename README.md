@@ -29,7 +29,8 @@ Optional
 ```
 --outputfolder="[folder]" // your custom folder for output file, i.e. "C:\Users\%USERNAME%\Desktop"
 --libreoffice // if you want to use LibreOffice as conversion tool instead of Excel
---policy // if you want to convert data to comply with archiving requirements
+--policy // if you want to convert data to comply with regular archiving requirements
+--policy-strict // if you want to convert data to comply with strict archiving requirements
 --delete // if original file should be deleted
 --rename="[filename]" // your custom filename e.g. "1".
 ```

@@ -36,27 +36,6 @@ namespace Convert.Spreadsheet
                     spreadsheet.WorkbookPart.DeletePart(vba);
                     repaired = true;
                 }
-
-                // Correct the namespace for customUI14.xml, if wrong
-                //WORK IN PROGRESS
-                RibbonExtensibilityPart ribbon = spreadsheet.RibbonExtensibilityPart;
-                if (ribbon != null)
-                {
-                    Uri uri = new Uri("/customUI/customUI14.xml", UriKind.Relative);
-                    if (spreadsheet.Package.GetPart(uri) != null)
-                    {
-                        if (ribbon.RootElement.NamespaceUri != "http://schemas.microsoft.com/office/2009/07/customui")
-                        {
-                            var list = ribbon.RootElement.NamespaceDeclarations.ToList();
-                            foreach (var name in list)
-                            {
-                                Console.WriteLine(name.Key + " " + name.Value);
-                            }
-                            Console.WriteLine(ribbon.RootElement.Prefix);
-                            Console.WriteLine(ribbon.RootElement.NamespaceUri);
-                        }
-                    }
-                }
             }
             return repaired;
         }

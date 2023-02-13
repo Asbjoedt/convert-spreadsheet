@@ -1,37 +1,40 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO.Packaging;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using DocumentFormat.OpenXml.Office2013.ExcelAc;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
+using System.Xml;
+using System.Xml.Linq;
+using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Drawing.Spreadsheet;
+using DocumentFormat.OpenXml.Drawing.Pictures;
+using DocumentFormat.OpenXml.Vml;
+using DocumentFormat.OpenXml.Office2013.ExcelAc;
+using ImageMagick;
 
 namespace Convert.Spreadsheet
 {
     public class Policy
     {
-        public bool All_OOXML(string filepath)
+        public void OOXML_Errors(string filepath)
         {
-            bool success = false;
-
-            Change_Conformance_ExcelInterop(filepath);
             Remove_DataConnections(filepath);
             Remove_CellReferences(filepath);
             Remove_RTDFunctions(filepath);
-            Remove_PrinterSettings(filepath);
             Remove_ExternalObjects(filepath);
-            Activate_FirstSheet(filepath);
+            Convert_EmbeddedImages(filepath);
+        }
+        public void OOXML_Warnings(string filepath)
+        {
+            Change_Conformance_ExcelInterop(filepath);
             Remove_AbsolutePath(filepath);
-
-            // Inform user and return success
-            Console.WriteLine("File complies with archival requirements");
-            success = true;
-            return success;
+            Activate_FirstSheet(filepath);
         }
 
         // Change conformance to Strict
@@ -68,14 +71,41 @@ namespace Convert.Spreadsheet
                     Console.WriteLine("Data connection was removed");
                 }
 
-                // Delete all query tables
-                List<WorksheetPart> worksheetparts = spreadsheet.WorkbookPart.WorksheetParts.ToList();
-                foreach (WorksheetPart part in worksheetparts)
+                // Delete all QueryTableParts
+                IEnumerable<WorksheetPart> worksheetParts = spreadsheet.WorkbookPart.WorksheetParts;
+                foreach (WorksheetPart worksheetPart in worksheetParts)
                 {
-                    List<QueryTablePart> queryTables = part.QueryTableParts.ToList();
-                    foreach (QueryTablePart qtp in queryTables)
+                    // Delete all QueryTableParts in WorksheetParts
+                    List<QueryTablePart> queryTables = worksheetPart.QueryTableParts.ToList(); // Must be a list
+                    foreach (QueryTablePart queryTablePart in queryTables)
                     {
-                        part.DeletePart(qtp);
+                        worksheetPart.DeletePart(queryTablePart);
+                    }
+
+                    // Delete all QueryTableParts, if they are not registered in a WorksheetPart
+                    List<TableDefinitionPart> tableDefinitionParts = worksheetPart.TableDefinitionParts.ToList();
+                    foreach (TableDefinitionPart tableDefinitionPart in tableDefinitionParts)
+                    {
+                        List<IdPartPair> idPartPairs = tableDefinitionPart.Parts.ToList();
+                        foreach (IdPartPair idPartPair in idPartPairs)
+                        {
+                            if (idPartPair.OpenXmlPart.ToString() == "DocumentFormat.OpenXml.Packaging.QueryTablePart")
+                            {
+                                // Delete QueryTablePart
+                                tableDefinitionPart.DeletePart(idPartPair.OpenXmlPart);
+                                // The TableDefinitionPart must also be deleted
+                                worksheetPart.DeletePart(tableDefinitionPart);
+                                // And the reference to the TableDefinitionPart in the WorksheetPart must be deleted
+                                List<TablePart> tableParts = worksheetPart.Worksheet.Descendants<TablePart>().ToList();
+                                foreach (TablePart tablePart in tableParts)
+                                {
+                                    if (idPartPair.RelationshipId == tablePart.Id)
+                                    {
+                                        tablePart.Remove();
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -93,9 +123,6 @@ namespace Convert.Spreadsheet
                     }
                 }
             }
-            // Repair spreadsheet
-            Repair rep = new Repair();
-            //rep.Repair_QueryTables(filepath);
         }
 
         // Remove RTD functions
@@ -254,23 +281,15 @@ namespace Convert.Spreadsheet
         {
             using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(filepath, true))
             {
-                List<ExternalWorkbookPart> extwbParts = spreadsheet.WorkbookPart.ExternalWorkbookParts.ToList();
-                if (extwbParts.Count > 0)
+                IEnumerable<ExternalWorkbookPart> extWbParts = spreadsheet.WorkbookPart.ExternalWorkbookParts;
+                foreach (ExternalWorkbookPart extWbPart in extWbParts)
                 {
-                    foreach (ExternalWorkbookPart extpart in extwbParts)
+                    List<ExternalRelationship> extrels = extWbPart.ExternalRelationships.ToList(); // Must be a list
+                    foreach (ExternalRelationship extrel in extrels)
                     {
-                        if (extpart.ExternalLink.ChildElements != null)
-                        {
-                            var elements = extpart.ExternalLink.ChildElements.ToList();
-                            foreach (var element in elements)
-                            {
-                                if (element.LocalName == "oleLink")
-                                {
-                                    spreadsheet.WorkbookPart.DeletePart(extpart);
-                                    Console.WriteLine("External object reference was removed");
-                                }
-                            }
-                        }
+                        Uri uri = new Uri($"External reference {extrel.Uri} was removed", UriKind.Relative);
+                        extWbPart.DeleteExternalRelationship(extrel.Id);
+                        extWbPart.AddExternalRelationship(relationshipType: "http://purl.oclc.org/ooxml/officeDocument/relationships/oleObject", externalUri: uri, id: extrel.Id);
                     }
                 }
             }
@@ -319,8 +338,197 @@ namespace Convert.Spreadsheet
             }
         }
 
+        public void Convert_EmbeddedImages(string filepath)
+        {
+            List<EmbeddedObjectPart> ole = new List<EmbeddedObjectPart>();
+            List<EmbeddedPackagePart> packages = new List<EmbeddedPackagePart>();
+            List<ImagePart> emf = new List<ImagePart>();
+            List<ImagePart> images = new List<ImagePart>();
+            List<Model3DReferenceRelationshipPart> threeD = new List<Model3DReferenceRelationshipPart>();
+
+            // Open spreadsheet
+            using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(filepath, true))
+            {
+                IEnumerable<WorksheetPart> worksheetParts = spreadsheet.WorkbookPart.WorksheetParts;
+                foreach (WorksheetPart worksheetPart in worksheetParts)
+                {
+                    // Perform check
+                    ole = worksheetPart.EmbeddedObjectParts.Distinct().ToList();
+                    packages = worksheetPart.EmbeddedPackageParts.Distinct().ToList();
+                    emf = worksheetPart.ImageParts.Distinct().ToList();
+                    if (worksheetPart.DrawingsPart != null) // DrawingsPart needs a null check
+                    {
+                        images = worksheetPart.DrawingsPart.ImageParts.Distinct().ToList();
+                    }
+                    threeD = worksheetPart.Model3DReferenceRelationshipParts.Distinct().ToList();
+
+                    // Perform change
+
+                    // Embedded binaries cannot be converted
+                    foreach (EmbeddedObjectPart part in ole)
+                    {
+
+                    }
+
+                    // Embedded packages cannot be converted
+                    foreach (EmbeddedPackagePart part in packages)
+                    {
+
+                    }
+
+                    // 3D objects cannot be processed - Bug in Open XML SDK?
+                    foreach (Model3DReferenceRelationshipPart part in threeD)
+                    {
+
+                    }
+
+                    // Convert Excel-generated .emf images to TIFF
+                    foreach (ImagePart imagePart in emf)
+                    {
+                        Convert_EmbedEmf(filepath, worksheetPart, imagePart);
+                    }
+
+                    // Convert embedded images to TIFF
+                    foreach (ImagePart imagePart in images)
+                    {
+                        Convert_EmbedImg(filepath, worksheetPart, imagePart);
+                    }
+                }
+            }
+        }
+
+        // Convert embedded images to TIFF
+        public void Convert_EmbedImg(string filepath, WorksheetPart worksheetPart, ImagePart imagePart)
+        {
+            // Convert streamed image to new stream
+            Stream stream = imagePart.GetStream();
+            Stream new_Stream = Convert_ImageMagick(stream);
+            stream.Dispose();
+
+            // Add new ImagePart
+            ImagePart new_ImagePart = worksheetPart.DrawingsPart.AddImagePart(ImagePartType.Tiff);
+
+            // Save image from stream to new ImagePart
+            new_Stream.Position = 0;
+            new_ImagePart.FeedData(new_Stream);
+
+            // Change relationships of image
+            string id = Get_RelationshipId(imagePart);
+            Blip blip = worksheetPart.DrawingsPart.WorksheetDrawing.Descendants<DocumentFormat.OpenXml.Drawing.Spreadsheet.Picture>()
+                            .Where(p => p.BlipFill.Blip.Embed == id)
+                            .Select(p => p.BlipFill.Blip)
+                            .Single();
+            blip.Embed = Get_RelationshipId(new_ImagePart);
+
+            // Delete original ImagePart
+            worksheetPart.DrawingsPart.DeletePart(imagePart);
+        }
+
+        // Convert Excel-generated .emf images to TIFF
+        public void Convert_EmbedEmf(string filepath, WorksheetPart worksheetPart, ImagePart imagePart)
+        {
+            // Convert streamed image to new stream
+            Stream stream = imagePart.GetStream();
+            Stream new_Stream = Convert_ImageMagick(stream);
+            stream.Dispose();
+
+            // Add new ImagePart
+            ImagePart new_ImagePart = worksheetPart.VmlDrawingParts.First().AddImagePart(ImagePartType.Tiff);
+
+            // Save image from stream to new ImagePart
+            new_Stream.Position = 0;
+            new_ImagePart.FeedData(new_Stream);
+
+            // Change relationships of image
+            string id = Get_RelationshipId(imagePart);
+            XDocument xElement = worksheetPart.VmlDrawingParts.First().GetXDocument();
+            IEnumerable<XElement> descendants = xElement.FirstNode.Document.Descendants();
+            foreach (XElement descendant in descendants)
+            {
+                if (descendant.Name == "{urn:schemas-microsoft-com:vml}imagedata")
+                {
+                    IEnumerable<XAttribute> attributes = descendant.Attributes();
+                    foreach (XAttribute attribute in attributes)
+                    {
+                        if (attribute.Name == "{urn:schemas-microsoft-com:office:office}relid")
+                        {
+                            if (attribute.Value == id)
+                            {
+                                attribute.Value = Get_RelationshipId(new_ImagePart);
+                                worksheetPart.VmlDrawingParts.First().SaveXDocument();
+                            }
+                        }
+                    }
+                }
+            }
+            // Delete original ImagePart
+            worksheetPart.VmlDrawingParts.First().DeletePart(imagePart);
+        }
+
+        // Convert embedded object to TIFF using ImageMagick
+        public Stream Convert_ImageMagick(Stream stream)
+        {
+            // Read the input stream in ImageMagick
+            using (MagickImage image = new MagickImage(stream))
+            {
+                // Set input stream position to beginning
+                stream.Position = 0;
+
+                // Create a memorystream to write image to
+                MemoryStream new_stream = new MemoryStream();
+
+                // Adjust TIFF settings
+                image.Format = MagickFormat.Tiff;
+                image.Settings.ColorSpace = ColorSpace.RGB;
+                image.Settings.Depth = 32;
+                image.Settings.Compression = CompressionMethod.LZW;
+
+                // Write image to stream
+                image.Write(new_stream);
+
+                // Return the memorystream
+                return new_stream;
+            }
+        }
+
+        // Get relationship id of an OpenXmlPart
+        public string Get_RelationshipId(OpenXmlPart part)
+        {
+            string id = "";
+            IEnumerable<OpenXmlPart> parentParts = part.GetParentParts();
+            foreach (OpenXmlPart parentPart in parentParts)
+            {
+                if (parentPart.ToString() == "DocumentFormat.OpenXml.Packaging.DrawingsPart")
+                {
+                    id = parentPart.GetIdOfPart(part);
+                    return id;
+                }
+                else if (parentPart.ToString() == "DocumentFormat.OpenXml.Packaging.VmlDrawingPart")
+                {
+                    id = parentPart.GetIdOfPart(part);
+                    return id;
+                }
+                else if (parentPart.ToString() == "DocumentFormat.OpenXml.Packaging.Model3DReferenceRelationshipPart")
+                {
+                    id = parentPart.GetIdOfPart(part);
+                    return id;
+                }
+                else if (parentPart.ToString() == "DocumentFormat.OpenXml.Packaging.EmbeddedPackagePart")
+                {
+                    id = parentPart.GetIdOfPart(part);
+                    return id;
+                }
+                else if (parentPart.ToString() == "DocumentFormat.OpenXml.Packaging.OleObjectPart")
+                {
+                    id = parentPart.GetIdOfPart(part);
+                    return id;
+                }
+            }
+            return id;
+        }
+
         // If file is ODS, use external app
-        public bool All_ODS(string filepath)
+        public bool ODS(string filepath, bool strict)
         {
             bool success = false;
             Process app = new Process();
@@ -341,8 +549,14 @@ namespace Convert.Spreadsheet
             {
                 app.StartInfo.FileName = "C:\\Program Files\\ODS-ArchivalRequirements\\ODS-ArchivalRequirements.jar";
             }
-
-            app.StartInfo.Arguments = $"--inputfilepath \"{filepath}\" --change";
+            if (strict)
+            {
+                app.StartInfo.Arguments = $"--inputfilepath \"{filepath}\" --change --policy-strict";
+            }
+            else
+            {
+                app.StartInfo.Arguments = $"--inputfilepath \"{filepath}\" --change";
+            }            
             app.Start();
             app.WaitForExit();
             app.Close();

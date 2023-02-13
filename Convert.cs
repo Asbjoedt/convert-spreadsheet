@@ -17,16 +17,6 @@ namespace Convert.Spreadsheet
         {
             bool success = false;
 
-            // If password-protected or reserved by another user
-            using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(input_filepath, false))
-            {
-                if (spreadsheet.WorkbookPart.Workbook.WorkbookProtection != null || spreadsheet.WorkbookPart.Workbook.FileSharing != null)
-                {
-                    Console.WriteLine("File failed conversion because of write-protection");
-                    return success;
-                }
-            }
-
             // Convert spreadsheet
             byte[] byteArray = File.ReadAllBytes(input_filepath);
             using (MemoryStream stream = new MemoryStream())
@@ -34,6 +24,12 @@ namespace Convert.Spreadsheet
                 stream.Write(byteArray, 0, (int)byteArray.Length);
                 using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(stream, true))
                 {
+                    if (spreadsheet.WorkbookPart.Workbook.WorkbookProtection != null || spreadsheet.WorkbookPart.Workbook.FileSharing != null)
+                    {
+                        Console.WriteLine("File failed conversion because of write-protection");
+                        return success;
+                    }
+
                     spreadsheet.ChangeDocumentType(SpreadsheetDocumentType.Workbook);
                 }
                 File.WriteAllBytes(output_filepath, stream.ToArray());

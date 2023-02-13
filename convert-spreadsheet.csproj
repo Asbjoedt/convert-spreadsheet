@@ -12,7 +12,7 @@
     <Title>convert-spreadsheet</Title>
     <Copyright>Asbjørn Skødt</Copyright>
     <RepositoryUrl>https://github.com/Asbjoedt/convert-spreadsheet</RepositoryUrl>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +23,9 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="DocumentFormat.OpenXml" Version="2.17.1" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.19.0" />
+    <PackageReference Include="DocumentFormat.OpenXml.Linq" Version="2.19.0" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="12.3.0" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
   </ItemGroup>
 

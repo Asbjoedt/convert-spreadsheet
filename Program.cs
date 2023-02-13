@@ -8,7 +8,7 @@ namespace Convert.Spreadsheet
     {
         public class Options
         {
-            [Option('i', "inputfilepath", Required = true, HelpText = "The input filepath")]
+            [Option('i', "inputfilepath", Required = true, HelpText = "The input filepath.")]
             public string InputFilepath { get; set; }
 
             [Option('d', "delete", Required = false, HelpText = "Set to delete original file.")]
@@ -17,14 +17,16 @@ namespace Convert.Spreadsheet
             [Option('r', "rename", Required = false, HelpText = "Define to rename output file.")]
             public string Rename { get; set; }
 
-            [Option('p', "policy", Required = false, HelpText = "Set to convert file to comply with archival requirements.")]
+            [Option('p', "policy", Required = false, HelpText = "Set to convert file to comply with regular archival requirements.")]
             public bool Policy { get; set; }
 
-            [Option('l', "libreoffice", Required = false, HelpText = "Set to use LibreOffice instead of Excel for conversion.")]
+            [Option('s', "policy-strict", Required = false, HelpText = "Set to convert file to comply with strict archival requirements.")]
+            public bool PolicyStrict { get; set; }
 
+            [Option('l', "libreoffice", Required = false, HelpText = "Set to use LibreOffice instead of Excel for conversion.")]
             public bool LibreOffice { get; set; }
 
-            [Option('f', "outputfileformat", Required = true, HelpText = "Define output file format")]
+            [Option('f', "outputfileformat", Required = true, HelpText = "Define output file format.")]
             public string OutputFileFormat { get; set; }
 
             [Option('o', "outputfolder", Required = false, HelpText = "Define to save output file in custom folder. Default is same folder.")]
@@ -130,22 +132,22 @@ namespace Convert.Spreadsheet
                 }
 
                 // Convert to comply with archival requirements
-                if (arg.Policy == true)
+                if (arg.Policy || arg.PolicyStrict)
                 {
                     Policy ArcReq = new Policy();
                     if (output_extension == ".xlsx")
                     {
-                        // First repair file
-                        Repair rep = new Repair();
-                        rep.Repair_OOXML(output_filepath);
-
-                        // Then comply with archival requirements
-                        archive_success = ArcReq.All_OOXML(output_filepath);
+                        ArcReq.OOXML_Errors(output_filepath);
+                        if (arg.PolicyStrict) 
+                        {
+                            ArcReq.OOXML_Warnings(output_filepath);
+                        }                        
+                        Console.WriteLine("File complies with archival requirements");
                     }
                     else if (output_extension == ".ods")
                     {
-                        // Comply with archival requirements
-                        archive_success = ArcReq.All_ODS(output_filepath);
+                        archive_success = ArcReq.ODS(output_filepath, arg.PolicyStrict);
+                        Console.WriteLine("File complies with archival requirements");
                     }
                     else
                     {

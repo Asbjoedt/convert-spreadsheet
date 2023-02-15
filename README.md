@@ -46,5 +46,6 @@ The program writes information to the console and it also returns an exit code t
 ## Packages and software
 The following packages and software are used under license.
 * [LibreOffice](https://www.libreoffice.org/), Mozilla Public License v2.0
+* [Magick.Net](https://github.com/dlemstra/Magick.NET), Apache-2.0 license, copyright (c) Dirk Lemstra
 * [Microsoft Excel](https://www.microsoft.com/en-us/microsoft-365/excel), Copyright (c) Microsoft Corporation
 * [Open XML SDK](https://github.com/OfficeDev/Open-XML-SDK), MIT License, Copyright (c) Microsoft Corporation

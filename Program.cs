@@ -97,7 +97,6 @@ namespace Convert.Spreadsheet
             }
 
             // Define data types
-            bool archive_success = false;
             bool convert_success = false;
 
             try
@@ -146,7 +145,7 @@ namespace Convert.Spreadsheet
                     }
                     else if (output_extension == ".ods")
                     {
-                        archive_success = ArcReq.ODS(output_filepath, arg.PolicyStrict);
+                        ArcReq.ODS(output_filepath, arg.PolicyStrict);
                         Console.WriteLine("File complies with archival requirements");
                     }
                     else

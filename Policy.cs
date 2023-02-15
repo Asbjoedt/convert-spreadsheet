@@ -528,9 +528,8 @@ namespace Convert.Spreadsheet
         }
 
         // If file is ODS, use external app
-        public bool ODS(string filepath, bool strict)
+        public void ODS(string filepath, bool strict)
         {
-            bool success = false;
             Process app = new Process();
             app.StartInfo.UseShellExecute = false;
             app.StartInfo.FileName = "javaw";
@@ -560,9 +559,6 @@ namespace Convert.Spreadsheet
             app.Start();
             app.WaitForExit();
             app.Close();
-
-            success = true;
-            return success;
         }
     }
 }

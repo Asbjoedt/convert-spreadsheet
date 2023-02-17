@@ -12,6 +12,10 @@ Excel can be used as conversion tool.
 
 LibreOffice can be used as conversion tool.
 
+:warning: **[ODS-ArchivalRequirements](https://github.com/Asbjoedt/ODS-ArchivalRequirements)**
+
+ODS-ArchivalRequirements are used for policy compliance for ODS spreadsheets.
+
 ## How to use
 Download the executable version [here](https://github.com/Asbjoedt/convert-spreadsheet/releases). There's no need to install. In your terminal change directory to the folder where convert-spreadsheet.exe is. Then, to execute the program input:
 ```

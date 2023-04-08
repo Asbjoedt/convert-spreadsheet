@@ -340,11 +340,8 @@ namespace Convert.Spreadsheet
 
         public void Convert_EmbeddedImages(string filepath)
         {
-            List<EmbeddedObjectPart> ole = new List<EmbeddedObjectPart>();
-            List<EmbeddedPackagePart> packages = new List<EmbeddedPackagePart>();
             List<ImagePart> emf = new List<ImagePart>();
             List<ImagePart> images = new List<ImagePart>();
-            List<Model3DReferenceRelationshipPart> threeD = new List<Model3DReferenceRelationshipPart>();
 
             // Open spreadsheet
             using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(filepath, true))
@@ -353,34 +350,13 @@ namespace Convert.Spreadsheet
                 foreach (WorksheetPart worksheetPart in worksheetParts)
                 {
                     // Perform check
-                    ole = worksheetPart.EmbeddedObjectParts.Distinct().ToList();
-                    packages = worksheetPart.EmbeddedPackageParts.Distinct().ToList();
                     emf = worksheetPart.ImageParts.Distinct().ToList();
                     if (worksheetPart.DrawingsPart != null) // DrawingsPart needs a null check
                     {
                         images = worksheetPart.DrawingsPart.ImageParts.Distinct().ToList();
                     }
-                    threeD = worksheetPart.Model3DReferenceRelationshipParts.Distinct().ToList();
 
                     // Perform change
-
-                    // Embedded binaries cannot be converted
-                    foreach (EmbeddedObjectPart part in ole)
-                    {
-
-                    }
-
-                    // Embedded packages cannot be converted
-                    foreach (EmbeddedPackagePart part in packages)
-                    {
-
-                    }
-
-                    // 3D objects cannot be processed - Bug in Open XML SDK?
-                    foreach (Model3DReferenceRelationshipPart part in threeD)
-                    {
-
-                    }
 
                     // Convert Excel-generated .emf images to TIFF
                     foreach (ImagePart imagePart in emf)

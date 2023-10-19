@@ -17,6 +17,7 @@ using DocumentFormat.OpenXml.Drawing.Pictures;
 using DocumentFormat.OpenXml.Vml;
 using DocumentFormat.OpenXml.Office2013.ExcelAc;
 using ImageMagick;
+using DocumentFormat.OpenXml;
 
 namespace Convert.Spreadsheet
 {
@@ -327,11 +328,14 @@ namespace Convert.Spreadsheet
         // Remove absolute path to local directory
         public void Remove_AbsolutePath(string filepath)
         {
-            using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(filepath, true))
+            using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(filepath, true, new OpenSettings()
+            {
+                MarkupCompatibilityProcessSettings = new MarkupCompatibilityProcessSettings(MarkupCompatibilityProcessMode.ProcessAllParts, FileFormatVersions.Office2013)
+            }))
             {
                 if (spreadsheet.WorkbookPart.Workbook.AbsolutePath != null)
                 {
-                    AbsolutePath absPath = spreadsheet.WorkbookPart.Workbook.GetFirstChild<AbsolutePath>();
+                    AbsolutePath absPath = spreadsheet.WorkbookPart.Workbook.AbsolutePath;
                     absPath.Remove();
                     Console.WriteLine("Absolute path to local directory removed");
                 }

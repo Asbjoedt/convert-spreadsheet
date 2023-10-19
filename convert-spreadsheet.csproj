@@ -25,7 +25,7 @@
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <PackageReference Include="DocumentFormat.OpenXml.Linq" Version="2.20.0" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.0.1" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.3.0" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
   </ItemGroup>
 
